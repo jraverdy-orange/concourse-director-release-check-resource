@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+
+echo "This resource doesn't support OUT actions"
+exit 1

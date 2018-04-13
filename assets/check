@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+
+# redirecting stdin to file
+cat > /tmp/input <&0 
+
+# parsing input
+director_url=`cat /tmp/input|jq -r '.source.uri'`
+director_client=`cat /tmp/input|jq -r '.source.id'`
+director_client_pwd=`cat /tmp/input|jq -r '.source.password'`
+product=`cat /tmp/input|jq -r '.source.product'`
+
+# connecting to uaa
+uaac target https://${director_url}:8443 --skip-ssl-validation 1>/dev/null
+
+
+uaac token client get $director_client -s $director_client_pwd 1>/dev/null
+
+uaa_cmd="uaac curl -k https://${director_url}:25555/releases \
+    |grep -A100 \"RESPONSE BODY\" \
+    | grep -v \"RESPONSE BODY\" \
+    | jq -r '.[]|select(.name|contains(\"${product}\"))|.release_versions[].version'|sort |tail -1"
+
+result="[{\"ref\":\""$(eval $uaa_cmd)"\"}]"
+
+echo $result|jq -r
