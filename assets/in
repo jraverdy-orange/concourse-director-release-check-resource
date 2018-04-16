@@ -1,4 +1,7 @@
 #!/usr/bin/env sh
+set -x
+outdir=$1
+shift
 
 # redirecting stdin to file
 cat > /tmp/input <&0 
@@ -20,5 +23,7 @@ uaa_cmd="uaac curl -k https://${director_url}:25555/releases \
     | jq -r '.[]|select(.name|contains(\"${product}\"))|.release_versions[].version'|sort |tail -1"
 
 result="{\"version\":{\"ref\":\""$(eval $uaa_cmd)"\"},\"metadata\":[{\"name\":\"${product}\",\"value\":\""$(eval $uaa_cmd)"\"}]}"
-echo $result
+
+echo ${result} > ${outdir}/metadata
+echo ${result}
 exit 0
